@@ -1,31 +1,32 @@
-//class FileExample {
-//    public static void main(String[] args) {
-//        // Путь к файлу для чтения
-//        Path inputFilePath = Paths.get("input.txt");
-//        // Путь к файлу для записи
-//        Path outputFilePath = Paths.get("output.txt");
-//
-//        try {
-//            // Чтение всех строк из файла
-//            List<String> lines = Files.readAllLines(inputFilePath);
-//            // Выводим строки на консоль
-//            for (String line : lines) {
-//                System.out.println(line);
-//            }
-//
-//            // Запись в новый файл
-//            Files.write(outputFilePath, lines);
-//            System.out.println("Данные успешно записаны в " + outputFilePath);
-//
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
-//    }
-//}
-
 import javax.crypto.Cipher;
 import java.util.Scanner;
 import java.util.regex.Pattern;
+import java.io.*;
+
+class FileHandler {
+
+    public static String readFile(String filePath) {
+        StringBuilder content = new StringBuilder();
+        try (BufferedReader br = new BufferedReader(new FileReader(filePath))) {
+            String line;
+            while ((line = br.readLine()) != null) {
+                content.append(line).append("\n");
+            }
+        } catch (IOException e) {
+            System.err.println("Ошибка при чтении файла: " + e.getMessage());
+        }
+        return content.toString();
+    }
+
+    public static void writeToFile(String filePath, String content) {
+        try (FileWriter writer = new FileWriter(filePath)) {
+            writer.write(content);
+        } catch (IOException e) {
+            System.err.println("Ошибка при записи в файл: " + e.getMessage());
+        }
+    }
+}
+
 
 class CaesarsСipher{
     private String input;
@@ -122,7 +123,7 @@ class CaesarsСipher{
         return editInput.toString().toCharArray();
     }
 }
-public class Main {
+public class Program {
     public static void main(String[] args) {
         while(true){
             Menu();
@@ -174,8 +175,7 @@ public class Main {
                     if(c == 2) {
                         System.out.println("Введите предложение: ");
                         String cipher = in.nextLine();
-                        System.out.println("Введите сдвиг: ");
-                        int shift = in.nextInt();
+                        int shift = 1;
                         CaesarsСipher NewCipherCipher = new CaesarsСipher(cipher, shift);
                         System.out.println(NewCipherCipher.pomogite1());
                         break;
@@ -184,16 +184,79 @@ public class Main {
                         System.out.println("Введите предложение: ");
                         String cipher = in.nextLine();
                         System.out.println("Введите сдвиг: ");
-                        int shift = in.nextInt();
+                        int shift = 1;
                         CaesarsСipher NewCipherCipher = new CaesarsСipher(cipher, shift);
                         System.out.println(NewCipherCipher.pomogite());
                         break;
                     }
                 case 4:
+                    String inputFilePath = "input.txt";
+                    String fileContent = FileHandler.readFile(inputFilePath);
+                    if (fileContent.isEmpty()) {
+                        System.out.println("Файл пуст или не был прочитан! Попробуйте снова.");
+                        System.out.println();
+                        continue;
+                    }
+                    System.out.println("Содержимое файла:\n" + fileContent);
+                    int language = chooseRusOrEng();
+                    System.out.println("Выберите действие: 1 - шифровать, 2 - расшифровать");
+                    int action = in.nextInt();
+                    in.nextLine();
+                    System.out.println();
+                    String resultContent;
+                    if (language==1 & action == 1) {
+                        if (!isRus(fileContent)) {
+                            System.out.println("Убедитесь, что в выбранном файле алфавит соответствует выбранному языку: ");
+                            System.out.println();
+                            break;
+                        }
+                        System.out.println("Введите сдвиг");
+                        int shift = in.nextInt();
+                        CaesarsСipher processor = new CaesarsСipher(fileContent, shift);
+                        resultContent = processor.Cipher1();
+                        FileHandler.writeToFile("output.txt", resultContent);
+                        System.out.println("Полученный зашифрованный текст:\n" + FileHandler.readFile("output.txt"));
+                    }
+                    else if(language==2 & action==1){
+                        if (!isEnglish(fileContent)) {
+                            System.out.println("Убедитесь, что в выбранном файле алфавит соответствует выбранному языку: ");
+                            System.out.println();
+                            break;
+                        }
+                        System.out.println("Введите сдвиг");
+                        int shift = in.nextInt();
+                        CaesarsСipher processor = new CaesarsСipher(fileContent, shift);
+                        resultContent = processor.Cipher();
+                        FileHandler.writeToFile("output.txt", resultContent);
+                        System.out.println("Полученный зашифрованный текст:\n" + FileHandler.readFile("output.txt"));
+                    }
+                    else if (language==1 & action == 2) {
+                        if (!isRus(fileContent)) {
+                            System.out.println("Убедитесь, что в выбранном файле алфавит соответствует выбранному языку: ");
+                            System.out.println();
+                            break;
+                        }
+                        CaesarsСipher processor = new CaesarsСipher(fileContent, 0);
+                        resultContent = processor.Jqifs2();
+                        System.out.println("Расшифрованный текст:\n" + resultContent);
+                        FileHandler.writeToFile("decrypted_output.txt", resultContent);
+                    }
+                    else if(language==2 & action==2){
+                        if (!isEnglish(fileContent)) {
+                            System.out.println("Убедитесь, что в выбранном файле алфавит соответствует выбранному языку: ");
+                            System.out.println();
+                            break;
+                        }
+                        CaesarsСipher processor = new CaesarsСipher(fileContent, 0);
+                        resultContent = processor.Jqifs();
+                        System.out.println("Расшифрованный текст:\n" + resultContent);
+                        FileHandler.writeToFile("decrypted_output.txt", resultContent);
+                    }
+                    else {
+                        System.out.println("Такого выбора нет");
+                    }
                     break;
                 case 5:
-                    break;
-                case 6:
                     return;
             }
         }
@@ -203,9 +266,8 @@ public class Main {
         System.out.println("1 Зашифровка");
         System.out.println("2 Расшифровка");
         System.out.println("3 Расшифровка каждым сдвигом");
-        System.out.println("4 ПотомРеализую");
-        System.out.println("5 ПотомРеализую");
-        System.out.println("6 Выход");
+        System.out.println("4 Работа с файлом");
+        System.out.println("5 Выход");
     }
     private static boolean isEnglish(String input){
         return Pattern.matches("[a-zA-Z0-9,.!?;:\"'()\\[\\]{}\\s-]*$", input);
@@ -219,5 +281,4 @@ public class Main {
         return in.nextInt();
     }
 }
-
 
